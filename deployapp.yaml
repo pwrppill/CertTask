@@ -1,0 +1,27 @@
+- name: Add host`s to the ansible-playbook in-memory inventory
+  hosts: localhost
+  
+  tasks:
+    - name: Add host to group 'deploy'
+      ansible.builtin.add_host:
+        name: "{{ lookup('file', 'deploy_ip.txt') }}"
+        groups: deploy
+
+- name: Deploy app
+  hosts: deploy
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: pull image from DockerHub
+      docker_image:
+        name: pwrppill/java-project:latest
+        state: present
+
+    - name: deploy docker container
+      docker_container:
+        image: pwrppill/java-project:latest
+        name: java-project
+        state: started
+        ports:
+          - "8383:8080"

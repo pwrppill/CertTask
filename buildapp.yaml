@@ -1,0 +1,32 @@
+- name: Add host`s to the ansible-playbook in-memory inventory
+  hosts: localhost
+  
+  tasks:
+    - name: Add host to group 'build'
+      ansible.builtin.add_host:
+        name: "{{ lookup('file', 'build_ip.txt') }}"
+        groups: build
+
+- name: Build app on instance & push to DockerHub
+  hosts: build
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Clone app
+      git:
+        repo: https://github.com/pwrppill/java-project.git
+        dest: /home/ubuntu/app
+
+    - name: Log into DockerHub
+      docker_login:
+        username: *****
+        password: *****
+
+    - name: Build app & push to registry
+      docker_image:
+        build:
+        path: /home/ubuntu/app
+        name: pwrppill/java-project
+        source: build
+        push: true

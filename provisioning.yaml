@@ -1,0 +1,34 @@
+- name: Add host`s to the ansible-playbook in-memory inventory
+  hosts: localhost
+  
+  tasks:
+    - name: Add host to group 'build'
+      ansible.builtin.add_host:
+        name: "{{ lookup('file', 'build_ip.txt') }}"
+        groups: build
+
+    - name: Add host to group 'deploy'
+      ansible.builtin.add_host:
+        name: "{{ lookup('file', 'deploy_ip.txt') }}"
+        groups: deploy
+
+- name: Install python + docker to all instance
+  hosts: all
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Ensure python is present
+      apt:
+        update_cache: yes
+        name:
+          - python3
+          - python-docker
+          - python3-pip
+        state: present
+
+    - name: Ensure docker is present
+      apt:
+        update_cache: yes
+        name: docker.io
+        state: present
